@@ -104,26 +104,49 @@ if (parseFloat(ScriptEngineMajorVersion() + "." + ScriptEngineMinorVersion()) >=
   echo "<option value=$i>$i</option>"; ?>
 </select>&nbsp;columns.
 <input type=submit class=submitPrimary value="Redisplay" name="mode">
-
 <br>
-<P>Please type your C++ code below.
+<br>
 <?
 global $ENABLE_MPI;
 global $MAX_PROCS;
-if ($ENABLE_MPI == TRUE) {
- echo "Run with ";
- echo "<select name=NumProcs>";
-   if ($_POST["NumProcs"] != "")
-   { 
-     $NumProcs = $_POST['NumProcs'];
-     echo "<option value=$NumProcs>$NumProcs</option>";
-   }
-   for ($i = 1; $i <= $MAX_PROCS; ++$i) {
-   echo "<option value=$i>$i</option>";
-   }
-   echo "</select>";
-   }   ?>
-   <br>
+//if ($ENABLE_MPI == TRUE) {
+//Dropdown for number of MPI processes
+  echo "Run with ";
+  echo "<select name=NumProcs>";
+  if ($_POST["NumProcs"] != "")
+  { 
+  $NumProcs = $_POST['NumProcs'];
+  }
+  for ($i = 1; $i <= $MAX_PROCS; ++$i) {
+    echo "<option value=$i";
+    if($_POST["NumProcs"] != "" && $i == $NumProcs){
+      echo " selected";
+    }
+    echo ">$i</option>";
+  }
+  echo "</select>";
+  echo " process(es) and ";
+//}
+//Dropdown for number of OpenMP Threads
+  echo "<select name=OpenMPThreads>";
+  if($_POST["OpenMPThreads"] != "")
+  {
+    putenv('OMP_NUM_THREADS=' . $_POST["OpenMPThreads"]);
+  }
+  $MAX_OMP_THREADS = 4;
+  for($i = 1; $i <= $MAX_OMP_THREADS; ++$i){
+    echo "<option value=$i";
+    if($_POST["OpenMPThreads"] != "" && $i == $_POST["OpenMPThreads"]){
+      echo " selected";
+    }
+    echo ">$i</option>";
+  }
+  echo "</select>";
+  echo " thread(s).";
+  ?>
+<br>
+<P>Please type your C++ code below.
+
 <p><textarea NAME="code" COLS=<? global $cols; echo $cols; ?>
   ROWS=<? global $rows; echo $rows; ?>>
 <? if ($_POST["mode"] == "Insert") {
@@ -184,8 +207,11 @@ if ($_POST["mode"] == "Run Code")
   global $LDFLAGS;
   global $LIBS;
   global $CXX;
+  global $CXX_COMPILER_FLAGS;
+  global $MPIEXEC;
+  global $NUMPROCS_FLAG;
 
-  $command .= "$CXX $configFileName $INCLUDES $LDFLAGS $LIBS ";
+  $command .= "$CXX $CXX_COMPILER_FLAGS $configFileName $INCLUDES $LDFLAGS $LIBS ";
   $command .= "-DHAVE_CONFIG_H -o $TempDirectory/WebTrilinos/$timestamp.exe 2>&1";
 
   passthru($command);
@@ -195,7 +221,12 @@ if ($_POST["mode"] == "Run Code")
   echo '<p><div class=outputBox><pre>';
 
   $command = "cd $TempDirectory/WebTrilinos;";
-  $command.= "./$timestamp.exe 2>&1 ";
+  $command.= "$MPIEXEC $NUMPROCS_FLAG $NumProcs ./$timestamp.exe 2>&1 ";
+
+//  $command.= "mpiexec -np 4         ./$timestamp.exe 2>&1 ";
+//  $command.= "mpiexec -np $NumProcs ./$timestamp.exe 2>&1 ";
+//  $command.= $NumProcs;
+//  $command.= " ./$timestamp.exe 2>&1 ";
 
   passthru($command);
 

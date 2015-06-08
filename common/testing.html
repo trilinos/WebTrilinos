@@ -38,7 +38,7 @@ include 'config.php';
   <li>We try to <tt>touch</tt> a file in  <tt>
     <? global $WebTrilinosDirectory; echo $WebTrilinosDirectory; ?>/tmp/</tt>. Remember that
   you have to use <tt>chmod go+rwx WebTrilinos/tmp</tt>, since PHP does not
-  operate as "you". If nothing is reported below, this test is fine.
+  operate as "you".
   <?
   global $WebTrilinosDirectory;
   $ourFileName = $WebTrilinosDirectory . "/tmp/test";
@@ -48,6 +48,10 @@ include 'config.php';
     echo "<P>can't open file: CHECK PERMISSIONS by executing the command:";
     echo "<br><tt>chmod go+rwx $WebTrilinosDirectory/tmp</tt>";
     echo "<br>then reload this page.";
+    echo "</FONT>";
+  }else{
+    echo "<FONT COLOR=BLUE>";
+    echo "<P>Test success!";
     echo "</FONT>";
   }
   fclose($ourFileHandle);
@@ -61,8 +65,7 @@ include 'config.php';
     <? global $HBMatrixDirectory; echo $HBMatrixDirectory; ?></tt>, then
   <tt>chmod go+rwx 
     <? global $XMLMatrixDirectory; echo $XMLMatrixDirectory; ?></tt>, 
-  since PHP does not operate as "you". If nothing is reported below,
-  this test is fine.
+  since PHP does not operate as "you".
   <?
   global $HBMatrixDirectory;
   global $XMLMatrixDirectory;
@@ -74,6 +77,10 @@ include 'config.php';
     echo "<br><tt>chmod go+rwx $HBMatrixDirectory</tt>";
     echo "<br>then reload this page.";
     echo "<br>Last PHP error that occured: <FONT COLOR=BLUE>$php_errormsg</FONT>";
+    echo "</FONT>";
+  }else{
+    echo "<FONT COLOR=BLUE>";
+    echo "<P>Test success!";
     echo "</FONT>";
   }
   fclose($ourFileHandle);
@@ -249,9 +256,11 @@ if (-1 == fwrite($configFile, $program)) {
   die("can't write to $configFileName: $php_errormsg"); }
 fclose($configFile);
 
+echo "<font color=blue>";
 passthru("$CXX $configFileName $INCLUDES $LDFLAGS $LIBS -o $configExe 2>&1 &&
 $configExe 2>&1");
 passthru("/bin/rm -f $configExe");
+echo "</font>";
 
 ?>
 </pre>
@@ -275,6 +284,7 @@ if ($PYTHONPATH != "")
   $command .= "PYTHONPATH=$PYTHONPATH ";
 $command .= 'python -c "from PyTrilinos import Epetra; comm = Epetra.PyComm(); print comm" 2>&1';
 echo "<font color=blue>";
+print "cmd: $command<br>";
 passthru($command);
 echo "</font>";
 ?>
@@ -285,8 +295,7 @@ echo "</font>";
 <li>We now try to import all the required PyTrilinos packages, by
 executing the instruction 
 <tt>python -c "from PyTrilinos import Epetra, EpetraExt, Amesos, IFPACK,
-  AztecOO, ML</tt>. Nothing should be printed on screen; if an error arises, please check
-your installation.
+  AztecOO, ML</tt>. Nothing should be printed on screen; if an error arises, please check your installation.
 <pre>
 <?
 global $PYTHONPATH;
@@ -294,7 +303,8 @@ global $PYTHONPATH;
 $command = "";
 if ($PYTHONPATH != "")
   $command .= "PYTHONPATH=$PYTHONPATH ";
-$command .= 'python -c "from PyTrilinos import Epetra, EpetraExt, Amesos, IFPACK, AztecOO, ML" 2 > &1';
+$command .= 'python -c "from PyTrilinos import Epetra, EpetraExt, Amesos,
+IFPACK, AztecOO, ML" 2 > &1';
 echo "<font color=blue>";
 passthru($command);
 echo "</font>";
@@ -311,5 +321,5 @@ and MatrixPortal module!
 <br>
 <br>
 <p>For more details, please check the official
-<a href=http://trilinos.sandia.gov/packages/webtrilinos>WebTrilinos'
+<a href=http://trilinos.org/packages/web-trilinos/>WebTrilinos'
   web page</a>.
