@@ -42,90 +42,23 @@ $Pass           = $_POST["Pass"];
 
 if ($_POST["mode"] != "")
 {
-  $includeFile = parse_ini_file($BaseInstallDir . "/include/Makefile.export.Trilinos");
-  if(!$includeFile){
-    echo "<h2>An error occured when trying to access a Trilinos installation in ";
-    echo "<tt>" . $BaseInstallDir . "</tt>.";
-    echo " Please check the installation directory below and try again.</h2>";
-  }else{
-    $prelimRemovals = explode(" ", $LibRemovals);
-    $removals = array();
-    $invalidRemovals = array();
-    $libstr = $includeFile[Trilinos_LIBRARIES] . " " . $includeFile[Trilinos_TPL_LIBRARIES] . " -lm";
-    foreach($prelimRemovals as &$str){
-      if(!$str == ""){
-        $str .= " ";
-        if(strpos($libstr, $str) !== false){
-          array_push($removals, $str);
-        }else{
-          array_push($invalidRemovals, $str);
-        }
-      }
-    }
-    $LIBS = str_replace($removals, "", $libstr);
-    
-    echo "<h2>This is the generated <tt>config.php</tt> file. Please copy the ";
-    echo "text below into <tt>$WebTrilinosDir/common/config.php</tt>. ";
-    echo "You might want to keep a copy of the original <tt>config.php</tt> file. ";
-    echo "Note that the &lt;? and ?&gt; characters must be included in the file, ";
-    echo "and that each variable content must be on the same line.";
-    echo "</h2>";
-    echo "<font color=red>";
-    echo "<tt>&lt;?</tt><br>";
-    echo '<tt>$WebTrilinosDirectory = "'. $WebTrilinosDir . '";</tt><br>';
-    echo '<tt>$HTMLImageDirectory   = "'. $HTMLImageDir . '";</tt><br>';
-    echo '<tt>$TempDirectory        = "'. $TempDir . '";</tt><br>';
-    echo '<tt>$INCLUDES             = "'. $includeFile[Trilinos_INCLUDE_DIRS] . '";</tt><br>';
-    echo '<tt>$LDFLAGS              = "'. $includeFile[Trilinos_LIBRARY_DIRS] . '";</tt><br>';
-    echo '<tt>$LIBS                 = "'. $LIBS . '";</tt><br>';
-    echo '<tt>$PYTHONPATH           = "'. $PythonDir . '";</tt><br>';
-    echo '<tt>$CXX                  = "'. $includeFile[Trilinos_CXX_COMPILER] . '";</tt><br>';
-    echo '<tt>$WebHost              = "'. $Web_Host . '";</tt><br>';
-    echo '<tt>$HBMatrixDirectory    = "'. $WebTrilinosDir .  '/data/HB/";</tt><br>';
-    echo '<tt>$MMMatrixDirectory    = "'. $WebTrilinosDir .  '/data/MM/";</tt><br>';
-    echo '<tt>$XMLMatrixDirectory   = "'. $WebTrilinosDir .  '/data/XML/";</tt><br>';
-    echo '<tt>$ImageDirectory       = "'. $WebTrilinosDir .  '/tmp/";</tt><br>';
-    echo '<tt>$Password             = "'. $Pass .  '";</tt><br>';
-    echo '<tt>$MAX_PROCS            = "'. $includeFile[Trilinos_MPI_EXEC_MAX_NUMPROCS] .'";</tt><br>';
-    echo '<tt>$MPIEXEC              = "'. $includeFile[Trilinos_MPI_EXEC] .'";</tt><br>';
-    echo '<tt>$NUMPROCS_FLAG        = "'. $includeFile[Trilinos_MPI_EXEC_NUMPROCS_FLAG] .'";</tt><br>';
-    echo '<tt>$CXX_COMPILER_FLAGS   = "'. $includeFile[Trilinos_CXX_COMPILER_FLAGS] .'";</tt><br>';
-    echo "<tt>?&gt;</tt>";
-    echo "</font>";
-    if(count($invalidRemovals) > 0){
-      echo "<br>";
-      echo "<h3>The following libraries were not found in the installation of Trilinos";
-      echo " specified and were not removed. If you are sure you set your installation";
-      echo " path correctly, please check your spelling.</h3>";
-      echo "<font color=red><tt>";
-      foreach($invalidRemovals as $str){
-        echo $str;
-      }
-      echo "</tt></font>";
-    }
-    echo "<br><br>";
-    echo "<h2>This is instead the generated <tt>config.py</tt> file. Please copy the";
-    echo " text below into <tt>$WebTrilinosDir/common/config.py</tt>. ";
-    echo "</h2>";
-    echo "<font color=red>";
-    echo "<tt>MAX_MATRIX_ROWS = 256 * 256</tt><br>";
-    echo "<tt>MAX_MATRIX_NONZEROS = 256 * 256 * 5</tt><br>";
-    echo "<tt>MAX_ITERATIONS = 1550</tt><br>";
-    echo "<tt>MAX_KSPACE = 60</tt><br>";
-    echo '<tt>HB_REPOSITORY = "' . $WebTrilinosDir . '/data/HB"</tt><br>';
-    echo '<tt>MM_REPOSITORY = "' . $WebTrilinosDir . '/data/MM"</tt><br>';
-    echo '<tt>XML_REPOSITORY = "' . $WebTrilinosDir . '/data/XML"</tt><br>';
-    echo "</font>";
-    echo "<hl>";
-    echo "<br>";
-    echo "<br>";
-    echo "If these settings are correct, proceed to the ";
-    echo "<a href=testing.html>testing</a> page.";
-    echo "<br>";
-    echo "<br>";
-    echo "<br>";
-    echo "<br>";
-  }
+  $outputFile = fopen("output.txt", "w");
+  fwrite($outputFile,
+        "[header]\n".
+        'WebTrilinosDir=' . $WebTrilinosDir . "\n" .
+	'HTMLImageDir='   . $HTMLImageDir   . "\n" . 
+        'TempDir='        . $TempDir        . "\n" .
+	'BaseInstallDir=' . $BaseInstallDir . "\n" .
+	'PythonDir='      . $PythonDir      . "\n" .
+	'LibRemovals='    . $LibRemovals    . "\n" .
+	'Web_Host='       . $Web_Host        . "\n" .
+	'Pass='           . $Pass           . "\n");
+  fclose($outputFile);
+
+  echo "<h2>Your inputs have been saved. Please run ";
+  echo "<tt>$WebTrilinosDir/common/generate-config.py</tt> to finish the ";
+  echo "configuration, then proceed to the <a href=testing.html>testing</a> page.</h2>";
+  echo "<br>";
 }
 if ($_POST["view"] != "")
 {
@@ -164,7 +97,7 @@ if ($_POST["view"] != "")
     echo "<br>";
   }else{
     echo "<h2>Could not find <tt>config.php</tt>. It should ";
-    echo "be located at <tt>WebTrilinos/common/config.php</tt></h2>";
+    echo "be located at <tt>common/config.php</tt> in the WebTrilinos directory.</h2>";
     echo "<br>";
   }
 }
@@ -183,7 +116,7 @@ the file.
   <p>Please specify the location of the WebTrilinos files. The files
   in this directory must be in the location of your httpdocs, as specified by
   your web server. If you are looking at this page from the web,
-  your already know the location of your httpdocs! A possible value could be
+  you already know the location of your httpdocs! A possible value could be
   <tt>/var/www/html/WebTrilinos</tt>.
   <br><input type="text" name=WebTrilinosDir
   value="<? global $WebTrilinos; echo $WebTrilinosDir;?>" size=60>
