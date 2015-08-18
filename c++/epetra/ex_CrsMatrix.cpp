@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
   z.Dot(q, &dotProduct);
 
   if (Comm.MyPID() == 0) 
-    cout << "q dot z = " << dotProduct << endl;
+    std::cout << "q dot z = " << dotProduct << std::endl;
 
 #ifdef HAVE_MPI
   MPI_Finalize();

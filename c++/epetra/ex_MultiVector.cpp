@@ -72,15 +72,15 @@ int main(int argc, char *argv[])
 
   for (int c=0 ; c < x.NumVectors() ;++c) 
     for (int i=0 ; i < MyLength ; ++i)
-      cout << "on proc " << Comm.MyPID() << ", x["
-	   << i << "] = " << pointer[c][i] << endl;
+      std::cout << "on proc " << Comm.MyPID() << ", x["
+	   << i << "] = " << pointer[c][i] << std::endl;
 
   // now modify the values
   for (int c = 0; c < x.NumVectors(); ++c) 
     for( int i = 0; i < MyLength; ++i)
       pointer[c][i] *= 10;
 
-  cout << x;
+  std::cout << x;
 
 #ifdef HAVE_MPI
   MPI_Finalize();

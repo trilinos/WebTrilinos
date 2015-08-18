@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
   A.FillComplete();
 
-  cout << A;
+  std::cout << A;
 
   delete[] Values;
 

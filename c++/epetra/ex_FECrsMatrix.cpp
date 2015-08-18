@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
   
   A.GlobalAssemble();
 
-  cout << A;
+  std::cout << A;
   
 #ifdef HAVE_MPI
   MPI_Finalize();

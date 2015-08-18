@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
   Epetra_Map Map1(NumGlobalPoint,0,Comm);
 
-  cout << Map1;
+  std::cout << Map1;
 
 #ifdef HAVE_MPI
   MPI_Finalize();

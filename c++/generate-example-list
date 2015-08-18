@@ -1,0 +1,80 @@
+#!/bin/bash
+ERRORS=0
+if [[ $# > 0 ]]; then
+	#Create backup of examples.txt, and clear examples.txt
+	echo "Copying examples.txt to examples.txt.bk"
+	cp examples.txt examples.txt.bk
+	> examples.txt
+
+	#Copy examples from webtrilinos-examples.txt into examples.txt
+	if [ -e "webtrilinos-examples.txt" ]; then
+		while IFS='|'; read -ra p; do
+			LINE="${p[0]}|${p[1]}|${p[2]}"
+			echo "Adding \"$LINE\" to examples.txt"
+			echo "$LINE" >> examples.txt
+		done < webtrilinos-examples.txt
+	else
+		echo "$(date): Error: Could not find WebTrilinos/c++/webtrilinos-examples.txt." >> error.log
+		echo "Error: Could not find webtrilinos-examples.txt."
+		((ERRORS++))
+	fi
+
+	#Read example lists from source directory (passed as arg)
+	find $1 -name tutorial_examples.txt >> find.txt
+	while read -ra p; do
+		echo "Found tutorial_examples.txt at $p"
+		exampleTxtDir="${p%/*}"
+		while IFS='|'; read -ra q; do
+			if [[ ${q[2]:0:1} == "/" ]]; then
+				LINE="${q[0]}|${q[1]}|${q[2]}"
+			else
+				LINE="${q[0]}|${q[1]}|$exampleTxtDir/${q[2]}"
+			fi
+			if ! grep -Fxq "$LINE" examples.txt ; then
+				echo "Adding \"$LINE\" to examples.txt"
+				echo "$LINE" >> examples.txt
+			fi
+		done < $p
+	done < find.txt
+	rm -rf find.txt
+fi
+
+#Copy files from examples.txt 3rd column to 2nd column.
+if [ !  -e "examples.txt" ]; then
+	echo "$(date): Fatal error: Could not find WebTrilinos/c++/examples.txt." >> error.log
+	echo "Fatal error: Could not find examples.txt."
+	exit 1
+else
+	while IFS='|'; read -ra p; do
+		if [ ! "${p[2]}" == "NULL" ]; then
+			if [ ! -e "${p[2]}" ]; then
+				echo "$(date): Error: ${p[2]} does not exist. Please check to ensure the path was entered correctly." >> error.log
+				echo "Error: ${p[2]} does not exist. Skipping."
+				((ERRORS++))
+			else
+				if [ ! -e "${p[1]%/*}" ]; then
+					echo "Creating directory ${p[1]%/*}."
+					mkdir -p "${p[1]%/*}"
+				fi
+				echo "Copying ${p[2]} to ${p[1]}"
+				cp "${p[2]}" "${p[1]}"
+			fi
+		elif [ ! -e "${p[1]}" ]; then
+			echo "$(date): Error: ${p[1]} not found in WebTrilinos." >> error.log
+			echo "	If ${p[1]} is supposed to exist, please ensure the path is entered correctly." >> error.log
+			echo "	Otherwise, please remove it from webtrilinos-examples.txt." >> error.log
+			echo "Error: ${p[1]} not found."
+			((ERRORS++))
+		fi
+	done < examples.txt
+fi
+
+echo ""
+if [[ $ERRORS == 0 ]]; then
+	echo "Script completed with no errors."
+	exit 0
+else
+	echo "Script completed with $ERRORS error(s)."
+	echo "Please refer to error.log for more details."
+	exit 1
+fi

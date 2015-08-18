@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   int NumProc = Comm.NumProc();
 
   // output some information to std output
-  cout << Comm << endl;
+  std::cout << Comm << std::endl;
 
 #ifdef HAVE_MPI
   MPI_Finalize();

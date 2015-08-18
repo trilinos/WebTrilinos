@@ -68,15 +68,15 @@ int main(int argc, char *argv[])
   x.ExtractView( &pointer );
 
   for (int i = 0; i < MyLength; ++i)
-    cout << "on proc " << Comm.MyPID() << ", x["
-	 << i << "] = " << pointer[i] << endl;
+    std::cout << "on proc " << Comm.MyPID() << ", x["
+	 << i << "] = " << pointer[i] << std::endl;
   
   // now modify the values
   for (int i = 0; i < MyLength; ++i)
     pointer[i] *= 10;
 
   // this affects the object x
-  cout << x;
+  std::cout << x;
 
 #ifdef HAVE_MPI
   MPI_Finalize();

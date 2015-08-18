@@ -73,22 +73,29 @@ if (parseFloat(ScriptEngineMajorVersion() + "." + ScriptEngineMinorVersion()) >=
     onclick='window.open(this.href,null,"height=400,width=400,status=yes,toolbar=no,menubar=no,location=no"); return false;' 
     class="help">?</a></p>
 
+<?php
+$examplesFile = fopen("examples.txt", "r");
+$examples = array();
+while(!feof($examplesFile)){
+  $exampleArray = explode("|", fgets($examplesFile));
+  if(!$exampleArray[0] == "" && file_exists($exampleArray[1])){
+    $examples[$exampleArray[0]] = $exampleArray[1];
+  }
+}
+fclose($examplesFile);
+?>
 
 <p>
 <form method="POST" action=index.html>
   Insert template <select name=template>
 <option name=template value="">-- select -- </option>
-<option value=Epetra_Comm>Using Epetra_Comm</option>
-<option name=template value=Epetra_Map>Using Epetra_Map</option>
-<option name=template value=Epetra_Vector>Using Epetra_Vector</option>
-<option name=template value=Epetra_MultiVector>Using Epetra_MultiVector</option>
-<option name=template value=Epetra_CrsMatrix>Using Epetra_CrsMatrix</option>
-<option name=template value=Epetra_FECrsMatrix>Using Epetra_FECrsMatrix</option>
-<option name=template value=Epetra_VbrMatrix>Using Epetra_VbrMatrix</option>
-<option name=template value=Amesos>Using Amesos</option>
-<option name=template value=AztecOO>Using AztecOO</option>
-<option name=template value=IFPACK>Using IFPACK with AztecOO</option>
-<option name=template value=ML>Using ML with AztecOO</option>
+<?php
+foreach($examples as $name => $path){
+  echo "<option value=\"" . $name . "\">";
+  echo $name;
+  echo "</option>\n";
+}
+?>
 </select>&nbsp;
 <input type=submit class=submitPrimary value=Insert name="mode">&nbsp;&nbsp;or&nbsp;&nbsp;
 <input type=submit class=submitPrimary value="Reset Code" name="mode">
@@ -109,70 +116,46 @@ if (parseFloat(ScriptEngineMajorVersion() + "." + ScriptEngineMinorVersion()) >=
 <?
 global $ENABLE_MPI;
 global $MAX_PROCS;
-//if ($ENABLE_MPI == TRUE) {
 //Dropdown for number of MPI processes
-  echo "Run with ";
-  echo "<select name=NumProcs>";
-  if ($_POST["NumProcs"] != "")
-  { 
-  $NumProcs = $_POST['NumProcs'];
+echo "Run with ";
+echo "<select name=NumProcs>";
+if ($_POST["NumProcs"] != "")
+{ 
+$NumProcs = $_POST['NumProcs'];
+}
+for ($i = 1; $i <= $MAX_PROCS; ++$i) {
+  echo "<option value=$i";
+  if($_POST["NumProcs"] != "" && $i == $NumProcs){
+    echo " selected";
   }
-  for ($i = 1; $i <= $MAX_PROCS; ++$i) {
-    echo "<option value=$i";
-    if($_POST["NumProcs"] != "" && $i == $NumProcs){
-      echo " selected";
-    }
-    echo ">$i</option>";
-  }
-  echo "</select>";
-  echo " process(es) and ";
-//}
+  echo ">$i</option>";
+}
+echo "</select>";
+echo " process(es) and ";
 //Dropdown for number of OpenMP Threads
-  echo "<select name=OpenMPThreads>";
-  if($_POST["OpenMPThreads"] != "")
-  {
-    putenv('OMP_NUM_THREADS=' . $_POST["OpenMPThreads"]);
+echo "<select name=OpenMPThreads>";
+if($_POST["OpenMPThreads"] != "")
+{
+  putenv('OMP_NUM_THREADS=' . $_POST["OpenMPThreads"]);
+}
+$MAX_OMP_THREADS = 4;
+for($i = 1; $i <= $MAX_OMP_THREADS; ++$i){
+  echo "<option value=$i";
+  if($_POST["OpenMPThreads"] != "" && $i == $_POST["OpenMPThreads"]){
+    echo " selected";
   }
-  $MAX_OMP_THREADS = 4;
-  for($i = 1; $i <= $MAX_OMP_THREADS; ++$i){
-    echo "<option value=$i";
-    if($_POST["OpenMPThreads"] != "" && $i == $_POST["OpenMPThreads"]){
-      echo " selected";
-    }
-    echo ">$i</option>";
-  }
-  echo "</select>";
-  echo " thread(s).";
-  ?>
+  echo ">$i</option>";
+}
+echo "</select>";
+echo " thread(s).";
+?>
 <br>
 <P>Please type your C++ code below.
 
 <p><textarea NAME="code" COLS=<? global $cols; echo $cols; ?>
   ROWS=<? global $rows; echo $rows; ?>>
 <? if ($_POST["mode"] == "Insert") {
-if ($_POST["template"] == "Epetra_Comm") {
-  include 'epetra/ex_Comm.cpp';
-} else if ($_POST["template"] == "Epetra_Map") {
-  include 'epetra/ex_Map.cpp';
-} else if ($_POST["template"] == "Epetra_Vector") {
-  include 'epetra/ex_Vector.cpp';
-} else if ($_POST["template"] == "Epetra_MultiVector") {
-  include 'epetra/ex_MultiVector.cpp';
-} else if ($_POST["template"] == "Epetra_CrsMatrix") {
-  include 'epetra/ex_CrsMatrix.cpp';
-} else if ($_POST["template"] == "Epetra_FECrsMatrix") {
-  include 'epetra/ex_FECrsMatrix.cpp';
-} else if ($_POST["template"] == "Epetra_VbrMatrix") {
-  include 'epetra/ex_VbrMatrix.cpp';
-} else if ($_POST["template"] == "Amesos") {
-  include 'amesos/ex_simple.cpp';
-} else if ($_POST["template"] == "AztecOO") {
-  include 'aztecoo/ex_simple.cpp';
-} else if ($_POST["template"] == "IFPACK") {
-  include 'ifpack/ex_simple.cpp';
-} else if ($_POST["template"] == "ML") {
-  include 'ml/ex_simple.cpp';
-} 
+  include $examples[$_POST["template"]]; 
 }  else if ($_POST["mode"] != "Reset Code") echo $_POST["code"]; 
 ?>
 </textarea>
